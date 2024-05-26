@@ -49,11 +49,7 @@ jobs:
             cp ./force-app/destructiveChangesPost.xml ./package-md/destructiveChangesPost.xml
           fi
 
-          sf project convert source --root-dir ./post-deploy --outputdir ./package-post-md
-
-
           zip -r package-md.zip ./package-md
-          zip -r package-post-md.zip ./package-post-md
 
       - name: Deploy
         shell: bash
