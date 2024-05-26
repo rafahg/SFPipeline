@@ -55,9 +55,7 @@ jobs:
         shell: bash
         run: |
           sf project deploy start --dry-run --wait 90 --metadata-dir package-md.zip --ignore-warnings --test-level RunLocalTests
-          sf project deploy start --dry-run --wait 90 --ignore-conflicts --metadata-dir package-post-md.zip --ignore-warnings
-
-      
+        
       - name: Remove JWT Key
         if: ${{ always() }}
         shell: bash 
