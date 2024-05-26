@@ -1,11 +1,17 @@
 {
   "packageDirectories": [
     {
+      "path": "pre-deploy"
+    },
+    {
       "path": "force-app",
       "default": true
+    },
+    {
+      "path": "post-deploy"
     }
   ],
-  "name": "SFPipeline",
+  "pushPackageDirectoriesSequentially": true,
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "59.0"

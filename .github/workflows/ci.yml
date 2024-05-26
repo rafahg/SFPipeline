@@ -14,8 +14,15 @@ jobs:
     steps: 
       - name: Clone Repository (Latest)
         uses: actions/checkout@v2 
+
       - name: Setup Node 
-        uses: actions/setup-node@v2 
+        uses: actions/setup-node@v2
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+          
       - name: Install SF CLI 
         run: sudo npm install --global @salesforce/cli@latest
   
@@ -31,7 +38,24 @@ jobs:
           CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
           USERNAME: ${{ secrets.USERNAME }}
         run: sf org login jwt  --client-id $CONSUMER_KEY --jwt-key-file  jwt.key  --username $USERNAME  --instance-url https://test.salesforce.com   --set-default  --alias targetOrg
+      - name: Create Package
+        shell: bash
+        run: |
+          sf project convert source --root-dir ./force-app --outputdir ./package-md
+          if [ -e ./force-app/destructiveChangesPre.xml ]; then
+            cp ./force-app/destructiveChangesPre.xml ./package-md/destructiveChangesPre.xml
+          fi
+          if [ -e ./force-app/destructiveChangesPost.xml ]; then
+            cp ./force-app/destructiveChangesPost.xml ./package-md/destructiveChangesPost.xml
+          fi
 
+          zip -r package-md.zip ./package-md
+
+      - name: Deploy
+        shell: bash
+        run: |
+          sf project deploy start --dry-run --wait 90 --metadata-dir package-md.zip --ignore-warnings --test-level RunLocalTests
+        
       - name: Remove JWT Key
         if: ${{ always() }}
         shell: bash 
