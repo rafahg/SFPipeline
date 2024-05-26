@@ -1,0 +1,38 @@
+name: CI
+
+on: 
+  pull_request: 
+    branches:
+      - sprint
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    environment: CI 
+
+    steps: 
+      - name: Clone Repository (Latest)
+        uses: actions/checkout@v2 
+      - name: Setup Node 
+        uses: actions/setup-node@v2 
+      - name: Install SF CLI 
+        run: sudo npm install --global @salesforce/cli@latest
+  
+      - name: Store JWT Key
+        shell: bash 
+        env:
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+        run: 'echo "$JWT_KEY" > jwt.key'
+      
+      - name: Authenticate Target Org
+        shell: bash
+        env:
+          CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+          USERNAME: ${{ secrets.USERNAME }}
+        run: sf org login jwt  --client-id $CONSUMER_KEY --jwt-key-file  jwt.key  --username $USERNAME  --instance-url https://test.salesforce.com   --set-default  --alias targetOrg
+
+      - name: Remove JWT Key
+        if: ${{ always() }}
+        shell: bash 
+        run: rm jwt.key
