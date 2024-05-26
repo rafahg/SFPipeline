@@ -51,10 +51,15 @@ jobs:
 
           zip -r package-md.zip ./package-md
 
-      - name: Deploy
+      - name: Validate Deployment
         shell: bash
         run: |
           sf project deploy start --dry-run --wait 90 --metadata-dir package-md.zip --ignore-warnings --test-level RunLocalTests
+      
+      - name: Deployment After Correct validation and tests passed.
+        shell: bash
+        run: |
+          sf project deploy start --wait 90 --metadata-dir package-md.zip --ignore-warnings --test-level RunLocalTests
         
       - name: Remove JWT Key
         if: ${{ always() }}
