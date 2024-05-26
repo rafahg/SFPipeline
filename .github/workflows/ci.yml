@@ -6,62 +6,110 @@ on:
       - sprint
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  validation_job: 
+      runs-on: ubuntu-latest
+      environment: CI 
 
-    environment: CI 
+      steps: 
+        - name: Clone Repository (Latest)
+          uses: actions/checkout@v4 
 
-    steps: 
-      - name: Clone Repository (Latest)
-        uses: actions/checkout@v2 
+        - name: Setup Node 
+          uses: actions/setup-node@v4
 
-      - name: Setup Node 
-        uses: actions/setup-node@v2
-
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-          
-      - name: Install SF CLI 
-        run: sudo npm install --global @salesforce/cli@latest
-  
-      - name: Store JWT Key
-        shell: bash 
-        env:
-          JWT_KEY: ${{ secrets.JWT_KEY }}
-        run: 'echo "$JWT_KEY" > jwt.key'
-      
-      - name: Authenticate Target Org
-        shell: bash
-        env:
-          CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
-          USERNAME: ${{ secrets.USERNAME }}
-        run: sf org login jwt  --client-id $CONSUMER_KEY --jwt-key-file  jwt.key  --username $USERNAME  --instance-url https://test.salesforce.com   --set-default  --alias targetOrg
-      - name: Create Package
-        shell: bash
-        run: |
-          sf project convert source --root-dir ./force-app --outputdir ./package-md
-          if [ -e ./force-app/destructiveChangesPre.xml ]; then
-            cp ./force-app/destructiveChangesPre.xml ./package-md/destructiveChangesPre.xml
-          fi
-          if [ -e ./force-app/destructiveChangesPost.xml ]; then
-            cp ./force-app/destructiveChangesPost.xml ./package-md/destructiveChangesPost.xml
-          fi
-
-          zip -r package-md.zip ./package-md
-
-      - name: Validate Deployment
-        shell: bash
-        run: |
-          sf project deploy start --dry-run --wait 90 --metadata-dir package-md.zip --ignore-warnings --test-level RunLocalTests
-      
-      - name: Deployment After Correct validation and tests passed.
-        shell: bash
-        run: |
-          sf project deploy start --wait 90 --metadata-dir package-md.zip --ignore-warnings --test-level RunLocalTests
+        - name: Set up Python 3.x
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.x'
+            
+        - name: Install SF CLI 
+          run: sudo npm install --global @salesforce/cli@latest
+    
+        - name: Store JWT Key
+          shell: bash 
+          env:
+            JWT_KEY: ${{ secrets.JWT_KEY }}
+          run: 'echo "$JWT_KEY" > jwt.key'
         
-      - name: Remove JWT Key
-        if: ${{ always() }}
-        shell: bash 
-        run: rm jwt.key
+        - name: Authenticate Target Org
+          shell: bash
+          env:
+            CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+            USERNAME: ${{ secrets.USERNAME }}
+          run: sf org login jwt  --client-id $CONSUMER_KEY --jwt-key-file  jwt.key  --username $USERNAME  --instance-url https://test.salesforce.com   --set-default  --alias targetOrg
+        - name: Create Package
+          shell: bash
+          run: |
+            sf project convert source --root-dir ./force-app --outputdir ./package-md
+            if [ -e ./force-app/destructiveChangesPre.xml ]; then
+              cp ./force-app/destructiveChangesPre.xml ./package-md/destructiveChangesPre.xml
+            fi
+            if [ -e ./force-app/destructiveChangesPost.xml ]; then
+              cp ./force-app/destructiveChangesPost.xml ./package-md/destructiveChangesPost.xml
+            fi
+
+            zip -r package-md.zip ./package-md
+
+        - name: Validate Against CI Org
+          shell: bash
+          run: |
+            sf project deploy start --dry-run --wait 90 --metadata-dir package-md.zip --ignore-warnings --test-level RunLocalTests
+        
+        - name: Remove JWT Key
+          if: ${{ always() }}
+          shell: bash 
+          run: rm jwt.key
+  Deployment: 
+      runs-on: ubuntu-latest
+      needs: validation_job
+      environment: CI 
+
+      steps: 
+        - name: Clone Repository (Latest)
+          uses: actions/checkout@v2 
+
+        - name: Setup Node 
+          uses: actions/setup-node@v2
+
+        - name: Set up Python 3.x
+          uses: actions/setup-python@v2
+          with:
+            python-version: '3.x'
+            
+        - name: Install SF CLI 
+          run: sudo npm install --global @salesforce/cli@latest
+    
+        - name: Store JWT Key
+          shell: bash 
+          env:
+            JWT_KEY: ${{ secrets.JWT_KEY }}
+          run: 'echo "$JWT_KEY" > jwt.key'
+        
+        - name: Authenticate Target Org
+          shell: bash
+          env:
+            CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+            USERNAME: ${{ secrets.USERNAME }}
+          run: sf org login jwt  --client-id $CONSUMER_KEY --jwt-key-file  jwt.key  --username $USERNAME  --instance-url https://test.salesforce.com   --set-default  --alias targetOrg
+        - name: Create Package
+          shell: bash
+          run: |
+            sf project convert source --root-dir ./force-app --outputdir ./package-md
+            if [ -e ./force-app/destructiveChangesPre.xml ]; then
+              cp ./force-app/destructiveChangesPre.xml ./package-md/destructiveChangesPre.xml
+            fi
+            if [ -e ./force-app/destructiveChangesPost.xml ]; then
+              cp ./force-app/destructiveChangesPost.xml ./package-md/destructiveChangesPost.xml
+            fi
+
+            zip -r package-md.zip ./package-md
+ 
+        - name: Deployment After Correct validation and tests passed.
+          shell: bash
+          run: |
+            sf project deploy start --wait 90 --metadata-dir package-md.zip --ignore-warnings --test-level RunLocalTests
+          
+        - name: Remove JWT Key
+          if: ${{ always() }}
+          shell: bash 
+          run: rm jwt.key
