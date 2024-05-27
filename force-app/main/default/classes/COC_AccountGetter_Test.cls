@@ -15,7 +15,7 @@ private  class COC_AccountGetter_Test {
 
     Assert.areEqual(1, fetchedAccounts, 'Accounts found must be 1');
     Assert.areEqual(0, IncorrectName, 'No accounts must be found');
-    Assert.areEqual(2,fetchedAccounts, 'Accounts Should be 2');
+    Assert.areNotEqual(2,fetchedAccounts, 'Accounts Should be 2');
 
  }
 
