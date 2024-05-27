@@ -1,11 +1,11 @@
+# .github/config.yml
 pulls:
   branches:
     - pattern: "feature/*"
       template: "PULL_REQUEST_TEMPLATE/sprint_branch_template.md"
     - pattern: "sprint"
       template: "PULL_REQUEST_TEMPLATE/sprint_branch_template.md"
-  labels: 
-    - label: "Deployment QA"
-      template: "PULL_REQUEST_TEMPLATE/qa_branch_template.md"
-    - label: "Release"
-      template: "PULL_REQUEST_TEMPLATE/production_branch_template.md"
+    - pattern: "qa"
+      template: "PULL_REQUEST_TEMPLATE/qa_branch_template"
+    - pattern: "main"
+      template: "PULL_REQUEST_TEMPLATE/production_branch_template"
