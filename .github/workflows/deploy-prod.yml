@@ -4,7 +4,23 @@ on:
   push: 
     branches:
       - main
-
+    paths-ignore:
+        - 'docs/**'
+        - '.github/**'
+        - '.forceignore'
+        - '.gitignore'
+        - '.prettierignore'
+        - '.prettierrc'
+        - '.npmrc'
+        - '.eslintrc'
+        - 'commitlint.config.js'
+        - 'lefthook.yml'
+        - 'LICENSE'
+        - 'package.json'
+        - 'package-lock.json'
+        - 'README.md'
+        - './**/README.md'
+        - 'sfdx-project.json'
 jobs:
   build:
     runs-on: ubuntu-latest
