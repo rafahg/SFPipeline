@@ -2,6 +2,8 @@ pulls:
   branches:
     - pattern: "feature/*"
       template: "PULL_REQUEST_TEMPLATE/sprint_branch_template.md"
+    - pattern: "sprint"
+      template: "PULL_REQUEST_TEMPLATE/sprint_branch_template.md"
   labels: 
     - label: "Deployment QA"
       template: "PULL_REQUEST_TEMPLATE/qa_branch_template.md"
