@@ -1,3 +1,4 @@
+// Example class to test github actions and pipeline
 public with sharing class COC_AccountGetter {
 
     public static List<Account> getAccountsByName(String name) {
